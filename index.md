@@ -1,7 +1,6 @@
 # Blog Posts
 
-- [Post0](posts/post0.md)
-- [Post1](posts/post1.md)
+- [Introduction](posts/0_introduction.md)
 
 # Cool stuff
 
