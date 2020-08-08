@@ -1,4 +1,4 @@
-theme: jekyll-theme-slate
+remote_theme: "mmistakes/minimal-mistakes@4.20.1"
 title: Arthur's blog posts
 description: "This \"website\" aims at gathering content I find interesting or am currently
 working on. Feel free to contribute!"
