@@ -23,10 +23,15 @@ read in a human-like way
 With a lexer-parser combo, it would probably read something like that:
 
 > I have created a `struct` token
+
 > I have created an `identifier` token
+
 > I have created a `left curly bracket` token
+
 > I have created all the tokens necessary for the fields inside the struct
+
 > I have created a `right curly bracket` token
+
 > I give all those tokens to my parser, which makes sure that they're in a syntactically
 > correct order
 
