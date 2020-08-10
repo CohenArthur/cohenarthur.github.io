@@ -4,4 +4,4 @@
 
 # Cool stuff
 
-- [08a's blog](08a.gitlab.io)
+- [08a's blog](https://08a.gitlab.io)
