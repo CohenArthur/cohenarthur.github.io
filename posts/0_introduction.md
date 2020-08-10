@@ -3,9 +3,8 @@
 ## Who am I
 
 My name is Arthur Cohen, I'm a french computer science student working on Embedded
-development and Programming languages. I really love low-level programming.
-
-- I'm trying to contribute to Rust
+development and Programming languages. I'm trying to contribute to open source software
+while learning as much as I can.
 
 ## The aim of this blog
 
@@ -44,5 +43,7 @@ here as well.
 
 
 
+<p align="center">
 [github](https://github.com/cohenarthur)
 [linkedin](https://www.linkedin.com/in/arthur-cohen-2b15b5175/)
+</p>
