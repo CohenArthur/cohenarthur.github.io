@@ -44,6 +44,6 @@ here as well.
 
 
 <p align="center">
-[github](https://github.com/cohenarthur)
-[linkedin](https://www.linkedin.com/in/arthur-cohen-2b15b5175/)
+    <a href=https://github.com/cohenarthur>github</a>
+    <a href=https://www.linkedin.com/in/arthur-cohen-2b15b5175/>linkedin</a>
 </p>
