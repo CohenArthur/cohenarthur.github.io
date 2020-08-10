@@ -23,7 +23,7 @@ opposite ways:
 a function call, a function definition, a loop, etc... without worrying about the syntax
 at all.
 - For broccoli, I'm starting with the parser and syntax, and limiting myself to a very
-generic ["`Instruction`"](https://github.com/CohenArthur/broccoli/blob/master/src/instruction/mod.rs)
+generic [Instruction](https://github.com/CohenArthur/broccoli/blob/master/src/instruction/mod.rs)
 data structure, that should ultimately be used to represent all directives in a program.
 
 I do not know yet which method is best, and I believe that putting some of the experience
