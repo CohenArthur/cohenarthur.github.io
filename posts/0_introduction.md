@@ -40,3 +40,9 @@ and consider it a success.
 If you're interested in embedded software and programming languages, I might post something
 that you'll find interesting ! If somehow some of my projects take off, you'll find updates
 here as well.
+
+
+
+
+[github](https://github.com/cohenarthur)
+[linkedin](https://www.linkedin.com/in/arthur-cohen-2b15b5175/)
