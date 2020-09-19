@@ -3,11 +3,11 @@
 When designing [jinko](https://github.com/cohenarthur/jinko), I chose to use a classic
 Lexer-Parser-AST architecture. But writing parsers yourself is a hassle, and I'm not a
 big fan of parser generators (I haven't tried any of the ones available for Rust, mind
-you). Since Rust is a kinda-functional language, there are parser combinators available,
-which I had less experience with and wanted to try.
+you). Since Rust is a kinda-functional language, there are
+[parser combinators](https://en.wikipedia.org/wiki/Parser_combinator) available, which
+I had less experience with and wanted to try.
 
-_Explain what a parser combinator is or link to Wikipedia
-Link to F# parser combinator tutorial
+_Link to F# parser combinator tutorial
 Talk about nom's limitations (doc, examples)..._
 
 I set off to use [nom](https://github.com/geal/nom). I have only made one project with
@@ -43,15 +43,14 @@ fn parse(input: &str) -> Result<Interpreter, JinkoError>;
 Given an input string (the source code), the parser should return a correct `Interpreter`
 (which is the data structure used to execute `jinko` code) or an error. In this module,
 two submodules are present: `Construct` and `Token`. `Token` exposes functions useful
-for token specification (recognizing an interpreter, a reserved keyword, a string, a
+for token specification (recognizing an identifier, a reserved keyword, a string, a
 floating point number, and so on) while `Construct` combines tokens to recognize complex
 lexical compounds, such as a function declaration, an if-else block, etc.
-
 
 Both `Token` and `Construct` use `nom`. Separating the parser like this creates a sort
 of lexer-parser composite, similar to what you're used to when using a parser generator
 or writing a homemade one. `Token` uses what I would qualify as "low level" combinators,
-in the sense that they act mostly on characters (`is_a`, `tag`, `char`) while `Consruct`
+in the sense that they act mostly on characters (`is_a`, `tag`, `char`) while `Construct`
 uses "combinator combinators" (`alt` to denotes a parser or another, `opt` to mark
 the optional usage of a parser...).
 
@@ -84,11 +83,30 @@ assert_eq!(Token::loop_tok("loopyaplop", Err(/* some nom error */));
 
 Secondly, why recognize "loop "  and not "loop"? As shown in the second assertion, the
 combinator would return `Ok` even if "loop" was used as something else than the keyword.
-Since nom is not specifically made for language parsers.
+Since nom is not specifically made for language parsers, this feature is important.
+Finding patterns that are not tokens is often useful when parsing certain types of
+data format. Therefore, every reserved keyword in jinko follows this function pattern:
+`tag("<keyword> ")`.
+If we wanted to allow syntax such as `loop{}`, which we should probably be doing anyway,
+we could simply replace the space in `tag` by another combinator. For example, one
+allowing one space or one opening bracket but not an
+[alphanumeric](https://docs.rs/nom/5.1.2/nom/character/fn.is_alphanumeric.html) character.
 
-If we were in a classic lexer, this would probably
+Now, let's look at the syntax for declaring variables in jinko.
+```rust
+x = 12;
+mut y = 13;
+```
 
-_Speak about <keyword><space>, how it's ugly, speak about identifiers
+`x` is a constant while `y` can be modified later on. This is useful for a variety of
+reason, notably not worrying about global variables being changed by calls in a library
+or subsequent functions. Now, the parser faces an issue: What about `muta = 15`? What
+about `mut mutb = 16`? By forcing the tokenization to consume a keyword AND the following
+space, you can easily differentiate between a mutable variable and an identifier called
+`mut*`. In this case, since the mut keyword is always followed by a space, so it's not an
+issue. This still feels like a very hacky part of the parser.
+
+_speak about identifiers
 For construct, speak about `mut`, speak about separation of funcs_
 
 For anyone getting into nom, I would suggest getting used to it before getting into
