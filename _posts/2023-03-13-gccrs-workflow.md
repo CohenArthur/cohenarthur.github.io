@@ -20,7 +20,7 @@ on GCC. This led to the heap of characters you're about to read.
 Building GCC is quite an involved process, with a lot of gotchas and documentation-reading required. I strongly recommend reading through [the GCC wiki's section on building](https://gcc.gnu.org/wiki/InstallingGCC) before attempting this.
 
 One of the most important note is the one about not building GCC directly within the root of the project. This will cause you pain. I'll put together what my usual workflow is for building a clean `gccrs` from a fresh `git clone`, and we can have a more detailed look at some of the steps.
-I have annotated the most important lines with a number, to which I'll refer in the next section.
+I have annotated the most important lines with a number, to which I'll refer in the next sections.
 
 ```shell-session
 $ pwd
@@ -32,7 +32,7 @@ $ cd ..
 $ make -C build -j14    # 2
 ```
 
-1. `../configure`
+### Configuring
 
 My entire `./configure` invocation looks like this:
 
@@ -50,7 +50,7 @@ I have timed an incremental build by simply running `touch` on `gcc/rust/checks/
 
 The `./configure` invocation can be broken down into a few parts.
 
-1. `CC='ccache clang' CXX='ccache clang++'`
+  * `CC='ccache clang' CXX='ccache clang++'`
 
 In order to achieve fast iteration on the project and short build times, I use the `clang`
 compiler rather than `gcc` to build the project. `clang` is much, much faster than `gcc`,
@@ -59,22 +59,22 @@ and I don't have any particular opinion on C++ compilers, so it does just fine. 
 of `gccrs` is warning free, the `clang`-based one [isn't (or maybe it is, if you're from the
 future)](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108111).
 
-2. The various `-fno-pie` and `-no-pie` flags
+  * The various `-fno-pie` and `-no-pie` flags
 
 These flags are simply to allow me to build the project on ArchLinux. There is also an
 `--enable-static` option to `./configure`, which I believe is supposed to achieve the same
 outcome, but I could not get it to work. I haven't looked into it more, and if it ain't broke
 don't fix it. But this could probably be cleaned up and improved.
 
-3. `LDFLAGS='-no-pie -fuse-ld=mold'`
+  * `LDFLAGS='-no-pie -fuse-ld=mold'`
 
 You can see once again a flag related to Position Independant Executables (`pie`), for the same reason stated above. The more interesting bit is the use of `mold` to link GCC. I won't benchmark the various linkers I have tried, but it does make a nice noticeable difference, as well as adds color to linker errors :D
 
-4. `--enable-languages=rust` and `--enable-multilib`
+  * `--enable-languages=rust` and `--enable-multilib`
 
 This flag only enables the compilation of the Rust frontend compiler (`gccrs` and `rust1`/`crab1`) as well as the default C frontend. This way, you won't end up compiling all default frontends for GCC, which include the C++ and Fortran compilers. Enabling multilib is useful for running tests in 32-bit mode.
 
-5. `--disable-bootstrap`
+  * `--disable-bootstrap`
 
 For developing GCC, you do not need to make a full bootstrap build of the compiler each time. However, it is enabled by default, as most people who build GCC are simply interested in using the compiler, not modifying it. Make sure to disable bootstrapping unless you want to check you did not introduce any new unaccepted warnings or error. But for most intents in purposes, you do not *need* to do bootstrap builds to work on GCC.
 
@@ -105,7 +105,7 @@ I will disable `ccache` and `mold` for bootstrapping the compiler as it is going
 
 Using `ccache` and `clang` does not help a lot with bootstrapping, as we will be building `g++` from scratch and using it to compile `gccrs`. This is a very, very long process, and I don't run bootstrap builds often, as they take around one hour to complete on my machine.
 
-2. `make -C build -j14`
+### Compiling the project
 
 Finally, compiling! It's easier for me to compile `gccrs` from the root of the project,
 as I'll often do multiple commands at once and am not very good at noticing when I change
@@ -140,7 +140,7 @@ $ bear -- make -C build -j1
 
 This will use the same options as specified in your `./configure` line and will allow you to get diagnostics and warnings according to your chosen compiler. But because this is C++ and you can't have nice things, the LSP will still not work with our parser implementation. And to be fair I don't really blame it since it's 17 000 lines of templated C++ code. But still!
 
-## `git`
+## Git workflow
 
 I used to have `neovim` as my editor, which allowed me to use the [fugitive](https://github.com/tpope/vim-fugitive) plugin to do git operations directly within my editor. However, since `helix` does not yet have support for plugins, I have switched to using `git` directly on the command-line.
 
@@ -204,5 +204,6 @@ If you want even more compilation tips, or explanation about various options, yo
 <br>
 <p style="font-family:'Source Code Pro'">
 <span style="color:#d784f3">type</span> <a href="https://github.com/cohenarthur">GitHub = <span style="color:#69c908">"/CohenArthur"</span></a>;<br>
-<span style="color:#d784f3">type</span> <a href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;
+<span style="color:#d784f3">type</span> <a href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;<br>
+<span style="color:#d784f3">type</span> <a href="https://hachyderm.io/@cohenarthur">Mastodon = HachydermIO<span style="color:#666666">[</span><span style="color:#69c908">"@cohenarthur"</span><span style="color:#666666">]</span></a>;<br>
 </p>
