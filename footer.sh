@@ -2,6 +2,6 @@
 
 footer="footer.md"
 
-for post in posts/*.md; do
+for post in _posts/*.md index.md; do
     cat $footer >> $post
 done;
