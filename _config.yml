@@ -1,4 +1,8 @@
-theme: jekyll-theme-minimal
+# remote_theme: pages-themes/tactile@v0.2.0
+theme: minima
+plugins:
+- jekyll-remote-theme 
+
 title: Arthur's hacky rucksack of random bytes
 description: "This \"website\" aims at gathering content I find interesting or am currently
 working on. Feel free to contribute!"
