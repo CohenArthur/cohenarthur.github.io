@@ -1,4 +1,11 @@
-# Introduction
+---
+layout: post
+title: "Introduction"
+author: Arthur Cohen
+post_url: introduction
+tags:
+    - general
+---
 
 ## Who am I
 
@@ -40,8 +47,9 @@ If you're interested in embedded software and programming languages, I might pos
 that you'll find interesting ! If somehow some of my projects take off, you'll find updates
 here as well.
 
-
-
--> [github](<a href=https://github.com/cohenarthur) <-
-
--> [linkedin](https://www.linkedin.com/in/arthur-cohen-2b15b5175/) <-
+<br>
+<br>
+<br>
+<br>
+<span style="color:#d784f3">type</span> <a href="https://github.com/cohenarthur">GitHub = <span style="color:#69c908">"/CohenArthur"</span></a>;<br>
+<span style="color:#d784f3">type</span> <a href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;
