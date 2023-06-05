@@ -309,11 +309,210 @@ Now that the interesting Rust bits are laid on the table, I thought I would dive
 
 One of the first thing to note about builtin derive macros is that they can only be applied to Rust types: `struct`s, `enum`s or `union`s. You cannot (at least, yet) use `#[derive(...)]` on other items, such as a function or trait declaration. To ensure that unaware contributors such as myself do not make this mistake in the future, we are utilizing C++'s type system (haha) to restrict our `Derive` implementation to these types of items:
 
-### Preventing mistakes
-### AST Builder
-### Tuple indexing
+```cpp
+/**
+ * The goal of this class is to accumulate and create the required items from a
+ * builtin `#[derive]` macro applied on a struct, enum or union.
+ */
+class DeriveVisitor : public AST::ASTVisitor
+{
+public:
+  static std::unique_ptr<Item> derive (Item &item, const Attribute &derive,
+				       BuiltinMacro to_derive);
 
-Also...
+private:
+  // the 4 "allowed" visitors, which a derive-visitor can specify and override
+  virtual void visit_struct (StructStruct &struct_item) = 0;
+  virtual void visit_tuple (TupleStruct &tuple_item) = 0;
+  virtual void visit_enum (Enum &enum_item) = 0;
+  virtual void visit_union (Union &enum_item) = 0;
+
+  // all visitors are final, so no deriving class can implement `derive` for
+  // anything other than structs, tuples, enums and unions
+
+  virtual void visit (StructStruct &struct_item) override final
+  {
+    visit_struct (struct_item);
+  }
+
+  virtual void visit (TupleStruct &tuple_struct) override final
+  {
+    visit_tuple (tuple_struct);
+  }
+
+  virtual void visit (Enum &enum_item) override final
+  {
+    visit_enum (enum_item);
+  }
+
+  virtual void visit (Union &union_item) override final
+  {
+    visit_union (union_item);
+  }
+
+  virtual void visit (IdentifierExpr &ident_expr) override final{};
+  virtual void visit (Lifetime &lifetime) override final{};
+  virtual void visit (LifetimeParam &lifetime_param) override final{};
+  virtual void visit (ConstGenericParam &const_param) override final{};
+  // ... and so on
+```
+
+All derive implementations, like our `DeriveClone` and `DeriveCopy` class, derive from this
+base `DeriveVisitor` class: thanks to these inheritance rules, they cannot implement deriving
+for items other than the allowed ones.
+
+Furthermore, you may remember the beginning of the blogpost mentioning that procedural macros
+received streams of tokens as an input: but just like `rustc`, `gccrs` can benefit from its
+AST when expanding builtin derive macros, and directly know whether it is dealing with a
+`struct`, `enum` or `union`, without needing to parse the received token stream. This saves an
+extra step in the processing and allows us to be more specific.
+
+The goal of builtin derive macros is to create a new `impl` block and integrate it to an existing AST: Basically, turn one item
+
+```rust
+#[derive(Copy)]
+struct S;
+```
+
+into two items
+
+```rust
+// item #1
+struct S;
+
+
+// item #2
+impl Copy for S {}
+```
+
+To do this, we need to be able to easily create AST nodes from our Derive classes: hence the creation of an `AstBuilder` class, whose role is to generate nodes easily and store them in the proper smart pointer types:
+
+```cpp
+/* Builder class with helper methods to create AST nodes. This builder is
+ * tailored towards generating multiple AST nodes from a single location, and
+ * may not be suitable to other purposes */
+class AstBuilder
+{
+public:
+  AstBuilder (Location loc) : loc (loc) {}
+
+  /* Create a reference to an expression (`&of`) */
+  std::unique_ptr<Expr> ref (std::unique_ptr<Expr> &&of, bool mut = false);
+
+  /* Create a dereference of an expression (`*of`) */
+  std::unique_ptr<Expr> deref (std::unique_ptr<Expr> &&of);
+
+  /* Create a block with an optional tail expression */
+  std::unique_ptr<Expr> block (std::vector<std::unique_ptr<Stmt>> &&stmts,
+			       std::unique_ptr<Expr> &&tail_expr = nullptr);
+
+  // ... etc
+```
+
+This class will also be reused for regular builtin macros such as `assert!`, `env!`, `panic!`... since this system also needs to create AST nodes in a simple way.
+
+The role of a deriving class is then to utilize this builder to create the proper `impl` block. For example, if we look at the implementation for `#[derive(Clone)]` on named tuples, `DeriveClone::visit_tuple`:
+
+```cpp
+void
+DeriveClone::visit_tuple (TupleStruct &item)
+{
+  // For each index field in the tuple, we create a new clone expression
+  auto cloned_fields = std::vector<std::unique_ptr<Expr>> ();
+
+  for (size_t idx = 0; idx < item.get_fields ().size (); idx++)
+    cloned_fields.emplace_back (
+      // call to clone...
+      clone_call (
+        // ... to a reference...
+        builder.ref (
+          // ... of a tuple index expression (`self.0`)
+          builder.tuple_idx ("self", idx))));
+
+  // then, create the constructor: if our tuple struct is named `Tuplo`,
+  // this amounts to creating `Tuplo(field_1, field_2, field_3...)`.
+  auto path = std::unique_ptr<Expr> (new PathInExpression (
+    builder.path_in_expression ({item.get_identifier ()})));
+  auto constructor = builder.call (std::move (path), std::move (cloned_fields));
+
+  // finally, we move this constructor expression in a function (`clone_fn`)
+  // which expands to `fn clone(&self) -> Self { <expression> }`
+
+  // and move this function into a `Clone` impl block:
+  // `impl Clone for Tuplo { <clone_fn> }`
+  expanded
+    = clone_impl (clone_fn (std::move (constructor)), item.get_identifier ());
+}
+```
+
+Since this is a Rust blogpost, and I do not mean to cause you heart palpitations by forcing you to read C++ code, here is an equivalent Rust implementation:
+
+```rust
+fn visit_tuple(&mut self, item: &TupleStruct) {
+    let cloned_fields = item.get_fields()
+        .enumerate()
+        .map(|(idx, _)
+            self.clone_call(
+                self.builder.ref(
+                    self.builder.tuple_idx("self", idx)
+                )
+            )
+        )
+        .collect::<Vec<Box<Expr>>();
+
+    let path = self.builder.path_in_expression(item.get_identifier());
+    let constructor = self.builder.call(path, cloned_fields);
+
+    self.expanded = self.clone_impl(self.clone_fn(constructor), item.get_identifier());
+}
+```
+
+The implementation is very similar to regular structs, where instead of creating "tuple index" expressions, we create "field access" expressions.
+
+If we look at our implementation of `DeriveClone::visit_union(Union &item)`, we can see the following:
+
+```cpp
+void
+DeriveClone::visit_union (Union &item)
+{
+  // <Self>
+  auto arg = GenericArg::create_type (builder.single_type_path ("Self"));
+
+  // AssertParamIsCopy::<Self>
+  auto type = std::unique_ptr<TypePathSegment> (
+    new TypePathSegmentGeneric (PathIdentSegment ("AssertParamIsCopy", loc),
+				false, GenericArgs ({}, {arg}, {}, loc), loc));
+  auto type_paths = std::vector<std::unique_ptr<TypePathSegment>> ();
+  type_paths.emplace_back (std::move (type));
+
+  // AssertParamIsCopy::<Self> with the right smart pointer type
+  auto full_path
+    = std::unique_ptr<Type> (new TypePath ({std::move (type_paths)}, loc));
+
+  auto stmts = std::vector<std::unique_ptr<Stmt>> ();
+
+  // let _: AssertParamIsCopy::<Self>
+  stmts.emplace_back (
+    builder.let (builder.wildcard (), std::move (full_path), nullptr));
+
+  // *self
+  auto tail_expr = builder.deref (builder.identifier ("self"));
+
+  // {
+  //     let _: AssertParamIsCopy::<Self>;
+  //     *self
+  // }
+  auto block = builder.block (std::move (stmts), std::move (tail_expr));
+
+  expanded = clone_impl (clone_fn (std::move (block)), item.get_identifier ());
+}
+```
+
+Even though it is a bit convoluted, we can kind of follow through the creation of the `AssertParamIsCopy` type and its associated let statements and dereference.
+
+Aaaaaand that is enough C++ for the day. But if you find this kind of thing interesting, and would like to try your hand at implementing `#[derive(Eq)]` or `#[derive(Default)]`, please come chat and work with us on the compiler. The existing frameworks should provide a good base for someone getting started, and there are a lot of derive macros left :) You can have a look at [our implementation for `#[derive(Copy)]`](https://github.com/Rust-GCC/gccrs/blob/cc09d0bf04fd87afb9f2b717d485a380a05e0a73/gcc/rust/expand/rust-derive-copy.cc), which is really simple.
+
+And finally,
 
 ## Today is my dog's birthday
 
