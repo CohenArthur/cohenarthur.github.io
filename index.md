@@ -4,6 +4,7 @@ layout: default
 
 ## Blog Posts
 
+- [Looking at Rust builtin derives]({% post_url 2023-06-05-rust-derives %})
 - [A `gccrs` workflow]({% post_url 2023-03-13-gccrs-workflow %})
 - [Introduction]({% post_url 2023-03-13-introduction %})
 
