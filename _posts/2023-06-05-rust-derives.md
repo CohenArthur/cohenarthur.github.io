@@ -12,8 +12,7 @@ We are currently working on supporting [builtin procedural macros](https://doc.r
 Procedural macros are a special kind of macros which, like "regular" macros, receive a list of tokens
 and return a new one. There are multiple tools to handle this list of tokens, starting with the types provided by the [`proc_macro`](https://doc.rust-lang.org/stable/proc_macro/) crate and ending with complex crates such as [`syn`](https://docs.rs/syn/latest/syn/) that allow you to parse this token input.
 
-Unlike regular macros, procedural macros are invoked and expanded not directly within the compiler but through foreign function calls to a user provided shared
-library (a `.so` file on Linux). The procedural macro's input is serialized to a stream of tokens, which gets sent to the macro via a dynamic procedure call. The returned token stream then needs to be deserialized and integrated to the AST. Furthermore, the tokens handled by a procedural macro are different from the compiler's tokens: they contain specific information, and have different stability guarantees and a different API. They are defined in the `proc_macro` crate, which we need to reimplement for `gccrs` to support procedural macros.
+Unlike regular macros, procedural macros are invoked and expanded through foreign function calls and not directly within the compiler. They are compiled to a separate binary, which the compiler will call into. The procedural macro's input is serialized to a stream of tokens, which gets sent to the macro via a dynamic procedure call. The returned token stream then needs to be deserialized and integrated to the AST. Furthermore, the tokens handled by a procedural macro are different from the compiler's tokens: they contain specific information, and have different stability guarantees and a different API. They are defined in the [`proc_macro`](https://doc.rust-lang.org/proc_macro/) crate, which we need to reimplement for `gccrs` to support procedural macros.
 
 Figuring out how to implement these macros in our compiler requires us to extensively research their official implementation.
 Since I had to spend so much time looking at `rustc`'s innards, as well as the eerie output produced by the compiler when invoking it with the proper `-Z` incantation, I thought that it would be fun to share some of the interesting bits I encountered. 🧙‍♀️
@@ -127,7 +126,7 @@ The first thing to note is that traits implemented automatically by the compiler
 impl ::core::marker::Copy for Fruit { }
 ```
 
-This attribute helps the compiler differentiate them from regular user implementations for various purposes such as lints or prettier typechecking errors.
+This attribute helps the compiler to differentiate them from regular user implementations for various purposes such as lints or prettier type checking errors.
 
 Now, if you look at the implementation of `Clone` for `FruitBowl`, you can see that it is quite simple:
 
@@ -247,7 +246,7 @@ So why is our `Fruit` enum getting special treatment? As a 17th century Rust dev
 
 By simply dereferencing a reference to a `Fruit`, we get another, new instance of `Fruit`, which will be a copy of the `self` parameter. Wooh!
 
-As pointed out to me by [Nilstrieb](https://github.com/Nilstrieb/), this is not typechecking: If you were to implement `Copy` by hand for this type, `rustc` could not realize (at that stage) that it can reuse the implementation. Macro expansion happens at the AST level, way before Rust code gets properly typechecked. I still think this is a form of funny typechecking since we're checking for a trait implementation but just not going the whole way, but as one says, it's not typechecking unless it comes from the French region of `hir::Ty<'tcx>`, it's just sparkling name resolution.
+As pointed out to me by [Nilstrieb](https://github.com/Nilstrieb/), this is not type checking: If you were to implement `Copy` by hand for this type, `rustc` could not realize (at that stage) that it can reuse the implementation. Macro expansion happens at the AST level, way before Rust code gets properly type checked. I still think this is a form of funny type checking since we're checking for a trait implementation but just not going the whole way, but as one says, it's not type checking unless it comes from the French region of `hir::Ty<'tcx>`, it's just sparkling name resolution.
 
 Another interesting line in the `Clone` implementation for `Fruit` is the following:
 
@@ -329,7 +328,7 @@ This arcane struct is `#[doc(hidden)]`, so you won't be able to see it on [https
 This struct, through Rust's powerful type system, ensures that
 its given generic parameter implements the `Copy` trait. Because there is no need to keep an instance of `T` within the type, it uses a [phantom type](https://doc.rust-lang.org/rust-by-example/generics/phantom.html) to enable the struct's genericity.
 
-The let statement creates a new binding, which does not create a value of type `AssertParamIsCopy<Register>`, but forces the compiler to create a monomorphized version of `AssertParamIsCopy` with `Register` as its type parameter. Then, during typechecking, the compiler ensures that `Register` meets the criteria for being passed to `AssertParamIsCopy`: This criteria is `Copy + ?Sized`. If the type is not `Copy`, we will get an error - so if our union is not `Copy`, we cannot clone it!
+The `let` statement creates a new binding, which does not create a value of type `AssertParamIsCopy<Register>`, but forces the compiler to create a monomorphized version of `AssertParamIsCopy` with `Register` as its type parameter. Then, during type checking, the compiler ensures that `Register` meets the criteria for being passed to `AssertParamIsCopy`: This criteria is `Copy + ?Sized`. If the type is not `Copy`, we will get an error - so if our union is not `Copy`, we cannot clone it!
 
 For experienced Rust playahs, this is baby shit. For others, including myself, this is super cool type-system witchcraft that everyone should know about! Figuring this out made my day a whole lot better, and reminded me of just how cool type systems are. I think it is *mega-fine* to see it being utilized in this way directly by the compiler.
 
@@ -465,7 +464,7 @@ struct S;
 impl Copy for S {}
 ```
 
-To do this, we need to be able to easily create AST nodes from our Derive classes: hence the creation of an `AstBuilder` class, whose role is to generate nodes easily and store them in the proper smart pointer types:
+To do this, we need to be able to easily create AST nodes from our `Derive*` classes: hence the creation of an `AstBuilder` class, whose role is to generate nodes easily and store them in the proper smart pointer types:
 
 ```cpp
 /* Builder class with helper methods to create AST nodes. This builder is
@@ -557,16 +556,16 @@ Passing the above snippet to `build/gcc/crab1 test.rs -frust-incomplete-and-expe
 
 ```rust
 impl Clone for StringPair {
-	fn clone(&self) -> Self {
-		StringPair(
-			Clone::clone(
-				&self.0,
-			),
-			Clone::clone(
-				&self.1,
-			),
-		)
-	}
+  fn clone(&self) -> Self {
+    StringPair(
+      Clone::clone(
+        &self.0,
+      ),
+      Clone::clone(
+        &self.1,
+      ),
+    )
+  }
 }
 
 struct StringPair(String, String);
@@ -616,7 +615,7 @@ DeriveClone::visit_union (Union &item)
 }
 ```
 
-Even though it is a bit convoluted, we can kind of follow through the creation of the `AssertParamIsCopy` type and its associated let statement and dereference tail expression.
+Even though it is a bit convoluted, we can kind of follow through the creation of the `AssertParamIsCopy` type and its associated `let` statement and dereference tail expression.
 
 Aaaaaand that is enough C++ for the day!
 
