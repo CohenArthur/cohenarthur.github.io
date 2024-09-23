@@ -2,6 +2,8 @@
 layout: default
 ---
 
+Future duck-ologist, bee-ologist or mushroom-ologist. For now I write compilers and sometimes write stuff about them.
+
 ## Blog Posts
 
 - [Looking at Rust builtin derives]({% post_url 2023-06-05-rust-derives %})
