@@ -7,6 +7,7 @@ Future duck-ologist, bee-ologist or mushroom-ologist. For now I write compilers 
 ## Blog Posts
 
 - [Looking at Rust builtin derives]({% post_url 2023-06-05-rust-derives %})
+- [Subtyping Rust enums]({% post_url 2024-09-17-subtyping-rust-enums %})
 - [A `gccrs` workflow]({% post_url 2023-03-13-gccrs-workflow %})
 - [Introduction]({% post_url 2023-03-13-introduction %})
 
