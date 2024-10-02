@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="stylesheets/code.css">
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <article class="post">
+        <img class="intro-image" src="{{ FUNGI_IMAGE }}" width=30%></img>
+
+		{{ PANDOC }}
+
+        <br>
+        <br>
+        <br>
+        <br>
+        <p style="font-family:'Source Code Pro'">
+        <span style="color:#d784f3">type</span> <a href="https://github.com/cohenarthur">GitHub = <span style="color:#69c908">"/CohenArthur"</span></a>;<br>
+        <span style="color:#d784f3">type</span> <a href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;<br>
+        <span style="color:#d784f3">type</span> <a href="https://hachyderm.io/@cohenarthur">Mastodon = HachydermIO<span style="color:#666666">[</span><span style="color:#69c908">"@cohenarthur"</span><span style="color:#666666">]</span></a>;<br>
+        </p>
+      </article>
+    </div>
+  </body>
+</html>
+
