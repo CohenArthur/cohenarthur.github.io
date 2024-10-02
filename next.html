@@ -1,0 +1,137 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="stylesheets/code.css">
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <article class="post">
+        <img class="intro-image" src="images/next.jpg" width=30%></img>
+        <h1>This is an article title</h1>
+
+        <p>
+          Rust enums typesystems mushrooms birds ducks dogs foxes otters yada yada.
+        </p>
+
+
+<p>Alternative title: <em>Making Rust enums a little bit more powerful
+and a lot more stupid</em>.</p>
+<p>Imagine the following. You are sending values to an API, which
+expects more variants than what you need to handle for your project.
+Let’s say this is about creating a feed schedule for any kind of farm
+animal, when you only have ducks and bees. We could represent this using
+the following enumerations in Rust:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="k">enum</span> MyAnimal <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    Duck<span class="op">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    Bee<span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="k">enum</span> ApiAnimal <span class="op">{</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    Duck<span class="op">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    Bee<span class="op">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    Goose<span class="op">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    Horse<span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    Cow<span class="op">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    Donkey<span class="op">,</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>We would then convert from our animals to the API’s expected list of
+animals using a function that looks something like this:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="k">fn</span> convert(animal<span class="op">:</span> MyAnimal) <span class="op">-&gt;</span> ApiAnimal <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> animal <span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="pp">MyAnimal::</span>Bee <span class="op">=&gt;</span> <span class="pp">ApiAnimal::</span>Bee<span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="pp">MyAnimal::</span>Duck <span class="op">=&gt;</span> <span class="pp">ApiAnimal::</span>Duck<span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Utterly uninteresting. However, as many of you will have noticed,
+this is a non-problem and probably something no one ever runs into.
+You’ll probably need to do more complex conversions, handle more cases,
+handle errors, or something - but still, I like making solutions for
+non-issues so I will keep going. <em>NOTE: Reword?</em></p>
+<p>We can see that the variants of our <code>MyAnimal</code> enum are
+exactly the same as the corresponding variants in the
+<code>ApiAnimal</code> enum. They have the same fields (none), the same
+order (<code>Duck</code> in first position, then <code>Bee</code>…), and
+frankly, it’s quite easy to see that all of the variants from our source
+enum are contained in our destination enum. So why can’t we simply…
+transform an instance of <code>MyAnimal</code> into one of
+<code>ApiAnimal</code>? Without writing any boring boilerplate code?
+Plus, if we decide to start adopting geese, we’ll need to add <em>one
+extra match arm</em> to our function, and frankly that won’t do. So
+let’s make the compiler do it for us automatically. Our aim is to be
+able to write the <code>convert</code> function like so:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="k">fn</span> convert(animal<span class="op">:</span> MyAnimal) <span class="op">-&gt;</span> ApiAnimal <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    animal</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Let’s look at what <code>rustc</code> 1.81 has to say about our code
+before we irreversibly worsen the compiler:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>error[E0308]<span class="op">:</span> mismatched types</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--&gt;</span> src<span class="op">/</span>lib<span class="op">.</span>rs<span class="op">:</span><span class="dv">23</span><span class="op">:</span><span class="dv">5</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>   <span class="op">|</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dv">22</span> <span class="op">|</span> <span class="k">fn</span> convert(animal<span class="op">:</span> MyAnimal) <span class="op">-&gt;</span> ApiAnimal <span class="op">{</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>   <span class="op">|</span>                                 <span class="op">---------</span> expected `ApiAnimal` because of <span class="cf">return</span> <span class="k">type</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>23 |     animal</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>   |     ^^^^^^ expected `ApiAnimal`, found `MyAnimal`</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>For more information about this error, try `rustc --explain E0308`.</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>error: could not compile `playground` (lib) due to 1 previous error</span></code></pre></div>
+<p>The types do not match, since we are trying to return an instance of
+<code>MyAnimal</code> when <code>rustc</code> expects an
+<code>ApiAnimal</code>. That means we need to let our typechecker know
+that in this particular case, that code is a-okay because we made sure
+all of the variants of <code>MyAnimal</code> are all members of the
+variants of <code>ApiAnimal</code>. We can model this using sets for
+each of the enums’ variants: if the variants of the source enum are all
+contained within the variants of the destination enum, then the
+conversion is okay. The code basically boils down to this:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="k">fn</span> is_a_okay_enum_conversion(src_enum<span class="op">:</span> Enum<span class="op">,</span> dst_enum<span class="op">:</span> Enum) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dst_enum<span class="op">.</span>variants()<span class="op">.</span>contains(src_enum<span class="op">.</span>variants())</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The compiler no longer complains about our function. Success. We
+create our branch, commit our code, and send a pull-request to
+<code>rustc</code>. All happy and blissful, satisfied, we now turn our
+attention to other matters in compiler-fantasy-land. Then the first
+review comes in:</p>
+<p>“What about at runtime?”</p>
+<p>What? What runtime? Who cares???</p>
+<p><em>NOTE: Remove talks about order of variants in source enum since
+we are gonna work around that</em></p>
+<p>Friend, anything past an SSA form is waaaaaay above my pay-grade. If
+you want stuff to run you should talk to LLVM or something.</p>
+<p>But our reviewer is right. What happens after typechecking? We cannot
+simply convert from one type to another willy-nilly. I mean, we
+<em>can</em> <del>core::mem::transmute</del>, sometimes, but really we
+shouldn’t, so we won’t. To understand why, we need to look at the layout
+of Rust enums:</p>
+<p>https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=b0c0b827c7ee1f8e3892b2024a3a9644</p>
+<p>The first issue is that our source and destination enum might not
+have the same size, despite one being a subset of the other.</p>
+<p><em>NOTE: Look at layout of Rust enums</em> <em>NOTE: Add examples
+from playground + LLVM IR</em></p>
+
+
+        <br>
+        <br>
+        <br>
+        <br>
+        <p style="font-family:'Source Code Pro'">
+        <span style="color:#d784f3">type</span> <a href="https://github.com/cohenarthur">GitHub = <span style="color:#69c908">"/CohenArthur"</span></a>;<br>
+        <span style="color:#d784f3">type</span> <a href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;<br>
+        <span style="color:#d784f3">type</span> <a href="https://hachyderm.io/@cohenarthur">Mastodon = HachydermIO<span style="color:#666666">[</span><span style="color:#69c908">"@cohenarthur"</span><span style="color:#666666">]</span></a>;<br>
+        </p>
+
+
+        <a class="link" href="#">gccrs' blog</a>
+      </article>
+    </div>
+  </body>
+</html>

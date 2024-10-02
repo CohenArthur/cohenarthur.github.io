@@ -1,0 +1,81 @@
+.atkinson-hyperlegible-regular {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.atkinson-hyperlegible-bold {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.atkinson-hyperlegible-regular-italic {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.atkinson-hyperlegible-bold-italic {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.source-code-pro-regular {
+  font-family: "Source Code Pro", monospace;
+  font-optical-sizing: auto;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.source-code-pro-bold {
+  font-family: "Source Code Pro", monospace;
+  font-optical-sizing: auto;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.source-code-pro-regular-italic {
+  font-family: "Source Code Pro", monospace;
+  font-optical-sizing: auto;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.source-code-pro-bold-italic {
+  font-family: "Source Code Pro", monospace;
+  font-optical-sizing: auto;
+  font-weight: 900;
+  font-style: italic;
+}
+
+* {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+}
+
+.container {
+  display: grid;
+  grid-template-rows: [header] 20px [row_content];
+  grid-template-columns: [start] 25% [content] auto [content_end] 25% [end];
+  gap: 10px;
+}
+
+.post {
+  display: flow-root;
+  grid-column-start: content;
+  grid-row-start: row_content;
+}
+
+.intro-image {
+  float: left;
+  margin-right: 1em;
+}
+
+.link {
+  color: #a560e0;
+}
+
+.intro_image {
+  display: grid;
+}
