@@ -1,7 +1,11 @@
 code { background: #d8abfc }
 code.tag { background: #ffffff }
-.sourceCode { background: #f4edf9; font-family: "Source Code Pro", monospace }
-.pp { color: #ba05fc }
-.op { color: #fc6805 }
-.kw { color: #fc6805 }
+.sourceCode { background: #f7f4f9; font-family: "Source Code Pro", monospace }
+
 .bu { color: #bf0065 }
+.pp { color: #bf0065 }
+
+.op { color: #000000 }
+.kw { color: #a304dd }
+
+.jinko-path { color: #da1bfc }

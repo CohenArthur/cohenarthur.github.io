@@ -22,12 +22,12 @@
         <br>
         <br>
         <br>
-        <br>
-        <p style="font-family:'Source Code Pro'">
-        <span style="color:#d784f3">type</span> <a href="https://github.com/cohenarthur">GitHub = <span style="color:#69c908">"/CohenArthur"</span></a>;<br>
-        <span style="color:#d784f3">type</span> <a href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;<br>
-        <span style="color:#d784f3">type</span> <a href="https://hachyderm.io/@cohenarthur">Mastodon = HachydermIO<span style="color:#666666">[</span><span style="color:#69c908">"@cohenarthur"</span><span style="color:#666666">]</span></a>;<br>
-        </p>
+
+        <div class="sourceCode" id="cb-footer">
+<pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb-footer-1"><a href="#cb-footer-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <a class="jinko-path" href="https://github.com/cohenarthur">GitHub = <span style="color:#69c908">"/CohenArthur"</span></a>;
+<span id="cb-footer-2"><a href="#cb-footer-2" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <a class="jinko-path" href="https://twitter.com/cohenarthurdev">Twitter = <span style="color:#69c908">"/CohenArthurDev"</span></a>;
+<span id="cb-footer-3"><a href="#cb-footer-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <a class="jinko-path" href="https://hachyderm.io/@cohenarthur">Mastodon = HachydermIO<span class="op">[</span><span style="color:#69c908">"@cohenarthur"</span><span class="op">]</span></a>;</code></pre></div>
+
       </article>
     </div>
   </body>
