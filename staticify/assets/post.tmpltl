@@ -11,7 +11,11 @@
   <body>
     <div class="container">
       <article class="post">
-        <img class="intro-image" src="{{ FUNGI_IMAGE }}" width=30%></img>
+        <img class="intro-image" src="{{ FUNGI }}" width=30% />
+
+        <h1> {{ TITLE }} </h1>
+
+        {{ TAGS }}
 
 		{{ PANDOC }}
 
