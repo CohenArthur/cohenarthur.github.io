@@ -57,7 +57,7 @@
 .container {
   display: grid;
   grid-template-rows: [header] 20px [row_content];
-  grid-template-columns: [start] 25% [content] auto [content_end] 25% [end];
+  grid-template-columns: [start] 20% [content] auto [content_end] 20% [end];
   gap: 10px;
 }
 
