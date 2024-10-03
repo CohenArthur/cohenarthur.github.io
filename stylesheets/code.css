@@ -1,3 +1,7 @@
-.sourceCode { background: #dbc2f0; font-family: "Source Code Pro", monospace }
-.pp { color: #0000ff }
-.kw { color: #ff0000 }
+code { background: #d8abfc }
+code.tag { background: #ffffff }
+.sourceCode { background: #f4edf9; font-family: "Source Code Pro", monospace }
+.pp { color: #ba05fc }
+.op { color: #fc6805 }
+.kw { color: #fc6805 }
+.bu { color: #bf0065 }

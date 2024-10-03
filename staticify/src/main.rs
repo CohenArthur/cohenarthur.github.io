@@ -44,7 +44,7 @@ impl From<Vec<String>> for Tags {
 impl fmt::Display for Tags {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let link_formatter =
-            |tag| format!("<a class=\"link\", href=\"{tag}\"><code>{tag}</code></a>");
+            |tag| format!("<a class=\"link\", href=\"{tag}\"><code class=\"tag\">{tag}</code></a>");
 
         let fmt = self
             .0
