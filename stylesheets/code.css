@@ -1,6 +1,11 @@
 code { background: #d8abfc }
 code.tag { background: #ffffff }
-.sourceCode { background: #f7f4f9; font-family: "Source Code Pro", monospace }
+
+.sourceCode {
+  background: #f7f4f9;
+  display: inherit;
+  font-family: "Source Code Pro", monospace
+}
 
 .bu { color: #bf0065 }
 .pp { color: #bf0065 }
